@@ -1,8 +1,47 @@
-Next Release (0.4)
-==================
-
-Release 0.3
+Release 0.6 (2018/04/30)
 ===========
+Features
+--------
+* [#20](https://github.com/Zlika/reproducible-build-maven-plugin/pull/20): Add new parameters for strip-jar goal: zipDateTime and zipDateTimeFormatPattern - [@aksian](https://github.com/aksian).
+
+Release 0.5.2 (2018/03/13)
+=============
+Bug Fixes
+---------
+* [#15](https://github.com/Zlika/reproducible-build-maven-plugin/issues/15): Fix another bug during sorting of MANIFEST.MF files - [@unicolet](https://github.com/unicolet).
+
+Release 0.5.1 (2018/03/08)
+=============
+Bug Fixes
+---------
+* [#15](https://github.com/Zlika/reproducible-build-maven-plugin/issues/15): Take into account multi-line attributes and sections when sorting MANIFEST.MF files.
+* [#16](https://github.com/Zlika/reproducible-build-maven-plugin/issues/16): Some tools require META-INF/MANIFEST.MF to be the first file in the archive.
+
+Release 0.5 (2018/02/17)
+===========
+Features
+--------
+* Sorts entries in MANIFEST.MF file (workaround for maven-archiver bug [MSHARED-511](https://issues.apache.org/jira/browse/MSHARED-511)).
+* [#4](https://github.com/Zlika/reproducible-build-maven-plugin/issues/4): Strips also tar/tar.gz/tar.bz archives - [@unicolet](https://github.com/unicolet), [@tglman](https://github.com/tglman).
+
+Release 0.4 (2017/10/27)
+===========
+Bug Fixes
+---------
+* [#12](https://github.com/Zlika/reproducible-build-maven-plugin/issues/12): Change default ZIP timestamp to 2000/01/01 at 00:00:00 to work around Java 9 compiler bug [JDK-8184940](https://bugs.openjdk.java.net/browse/JDK-8184940) - [@io7m](https://github.com/io7m).
+
+Non-functional changes
+----------------------
+* [#10](https://github.com/Zlika/reproducible-build-maven-plugin/issues/10): Declare the plugin's goals as thread-safe.
+* Add "Automatic-Module-Name" in Manifest.
+* The plugin can now be built with Java 9.
+
+Release 0.3 (2017/08/10)
+===========
+Bug Fixes
+---------
+* [#6](https://github.com/Zlika/reproducible-build-maven-plugin/issues/6): Fix wrong detection of ZIP files.
+
 Features
 --------
 * Add M2Eclipse lifecycle mapping metadata for Eclipse IDE.
@@ -13,7 +52,7 @@ Non-functional changes
 ----------------------
 * Upgrade commons-compress to avoid reflection hack.
 
-Release 0.2
+Release 0.2 (2015/10/06)
 ===========
 Bug Fixes
 ---------
@@ -23,7 +62,7 @@ Features
 --------
 * New strip-jaxb goal to normalize ObjectFactory.java files produced by JAXB/xjc.
 
-Release 0.1
+Release 0.1 (2015/10/01)
 ===========
 First release for tests.
 Features
