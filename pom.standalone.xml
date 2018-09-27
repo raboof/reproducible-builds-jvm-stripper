@@ -3,7 +3,7 @@
 
   <groupId>net.bzzt</groupId>
   <artifactId>reproducible-build</artifactId>
-  <version>0.3</version>
+  <version>0.4-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>Reproducible Build Standalone Library</name>
@@ -30,7 +30,7 @@
     <connection>scm:git:git@github.com:raboof/reproducible-build-maven-plugin.git</connection>
     <developerConnection>scm:git:git@github.com:raboof/reproducible-build-maven-plugin.git</developerConnection>
     <url>https://github.com/raboof/reproducible-build-maven-plugin</url>
-    <tag>reproducible-build-0.3</tag>
+    <tag>HEAD</tag>
   </scm>
   
   <issueManagement>
