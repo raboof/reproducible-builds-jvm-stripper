@@ -3,7 +3,7 @@
 
   <groupId>io.github.zlika</groupId>
   <artifactId>reproducible-build-maven-plugin</artifactId>
-  <version>0.7-SNAPSHOT</version>
+  <version>0.8-SNAPSHOT</version>
   <packaging>maven-plugin</packaging>
 
   <name>Reproducible Build Maven Plugin</name>

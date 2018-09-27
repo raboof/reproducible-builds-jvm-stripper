@@ -1,3 +1,10 @@
+Release 0.7 (2018/06/03)
+===========
+Features
+--------
+* [#17](https://github.com/Zlika/reproducible-build-maven-plugin/issues/17): Add user-configurable list of additional manifest attributes to remove.
+* [#23](https://github.com/Zlika/reproducible-build-maven-plugin/issues/23): Remove OpenIDE-Module-Build-Version attribute in manifest.
+
 Release 0.6 (2018/04/30)
 ===========
 Features
