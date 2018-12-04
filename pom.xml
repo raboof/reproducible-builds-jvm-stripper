@@ -1,14 +1,14 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
-  <groupId>io.github.zlika</groupId>
-  <artifactId>reproducible-build-maven-plugin</artifactId>
-  <version>0.8-SNAPSHOT</version>
-  <packaging>maven-plugin</packaging>
+  <groupId>net.bzzt</groupId>
+  <artifactId>reproducible-builds-jvm-stripper</artifactId>
+  <version>0.4-SNAPSHOT</version>
+  <packaging>jar</packaging>
 
-  <name>Reproducible Build Maven Plugin</name>
-  <description>This Plug-In allows to generate byte-for-byte reproducible artifacts</description>
-  <url>http://zlika.github.io/reproducible-build-maven-plugin</url>
+  <name>Reproducible Build Standalone Library</name>
+  <description>This library helps to generate byte-for-byte reproducible artifacts for the JVM</description>
+  <url>https://github.com/raboof/reproducible-builds-jvm-stripper</url>
   
   <inceptionYear>2015</inceptionYear>
   <licenses>
@@ -21,21 +21,25 @@
   
   <developers>
     <developer>
+      <name>Arnout Engelen</name>
+      <email>arnout@bzzt.net</email>
+    </developer>
+    <developer>
       <name>Thomas Lorblanchès</name>
       <email>zlika_ese@hotmail.com</email>
     </developer>
   </developers>
   
   <scm>
-    <connection>scm:git:git@github.com:Zlika/reproducible-build-maven-plugin.git</connection>
-    <developerConnection>scm:git:git@github.com:Zlika/reproducible-build-maven-plugin.git</developerConnection>
-    <url>https://github.com/Zlika/reproducible-build-maven-plugin</url>
+    <connection>scm:git:git@github.com:raboof/reproducible-builds-jvm-stripper.git</connection>
+    <developerConnection>scm:git:git@github.com:raboof/reproducible-builds-jvm-stripper.git</developerConnection>
+    <url>https://github.com/raboof/reproducible-builds-jvm-stripper</url>
     <tag>HEAD</tag>
   </scm>
   
   <issueManagement>
     <system>GitHub Issues</system>
-    <url>https://github.com/Zlika/reproducible-build-maven-plugin/issues</url>
+    <url>https://github.com/raboof/reproducible-builds-jvm-stripper/issues</url>
   </issueManagement>
   
   <distributionManagement>
@@ -49,7 +53,7 @@
     </repository>
     <site>
       <id>github-project-site</id>
-      <url>gitsite:git@github.com/Zlika/reproducible-build-maven-plugin.git</url>
+      <url>gitsite:git@github.com/raboof/reproducible-builds-jvm-stripper.git</url>
     </site>
   </distributionManagement>
 
@@ -88,7 +92,6 @@
     <maven-plugin-annotations.version>3.5.1</maven-plugin-annotations.version>
     <maven-plugin-api.version>3.5.2</maven-plugin-api.version>
     <plexus-utils.version>3.1.0</plexus-utils.version>
-    
   </properties>
 
   <dependencies>
@@ -211,7 +214,7 @@
             <autoVersionSubmodules>true</autoVersionSubmodules>
             <useReleaseProfile>false</useReleaseProfile>
             <releaseProfiles>release</releaseProfiles>
-            <goals>deploy site-deploy</goals>
+            <goals>deploy</goals>
             <tagNameFormat>v@{project.version}</tagNameFormat>
           </configuration>
         </plugin>

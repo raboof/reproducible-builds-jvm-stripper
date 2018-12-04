@@ -1,18 +1,17 @@
-reproducible-build-maven-plugin
-===============================
+reproducible-builds-jvm-stripper
+================================
 
-[![Build Status](https://travis-ci.org/Zlika/reproducible-build-maven-plugin.svg?branch=master)](https://travis-ci.org/Zlika/reproducible-build-maven-plugin)
-[![Coverage Status](https://coveralls.io/repos/Zlika/reproducible-build-maven-plugin/badge.svg?branch=master&service=github)](https://coveralls.io/github/Zlika/reproducible-build-maven-plugin?branch=master)
-[![Codacy Badge](https://api.codacy.com/project/badge/Grade/4950cc475731475b93c8389b9ec4fa21)](https://www.codacy.com/app/Zlika/reproducible-build-maven-plugin?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=Zlika/reproducible-build-maven-plugin&amp;utm_campaign=Badge_Grade)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/io.github.zlika/reproducible-build-maven-plugin/badge.svg)](https://maven-badges.herokuapp.com/maven-central/io.github.zlika/reproducible-build-maven-plugin)
+[![Build Status](https://travis-ci.org/raboof/reproducible-build-jar-stripper.svg?branch=master)](https://travis-ci.org/raboof/reproducible-build-jar-stripper)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.bzzt/reproducible-build-jar-stripper/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.bzzt/reproducible-build-jar-stripper)
 
-A Maven plugin to make your build byte-for-byte reproducible.
-Cf. http://zlika.github.io/reproducible-build-maven-plugin/
+Library to make your JVM artifacts byte-for-byte reproducible.
+
+Heavily based on http://zlika.github.io/reproducible-build-maven-plugin/ , but
+published as a standalone library rather than a Maven plugin.
 
 ### Requirements
 
 * Java 8
-* Maven 3.0.0 or newer
 
 ### How to compile
 
