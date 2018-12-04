@@ -20,5 +20,5 @@ See also [moot](https://github.com/Zlika/moot), a script that downloads given ve
 To compile the project and run its integration tests:
 
 ```
-mvn clean install -Prun-its
+mvn clean install #-Prun-its
 ```
