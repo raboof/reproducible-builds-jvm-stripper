@@ -1,8 +1,8 @@
 reproducible-builds-jvm-stripper
 ================================
 
-[![Build Status](https://travis-ci.org/raboof/reproducible-build-jar-stripper.svg?branch=master)](https://travis-ci.org/raboof/reproducible-build-jar-stripper)
-[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.bzzt/reproducible-build-jar-stripper/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.bzzt/reproducible-build-jar-stripper)
+[![Build Status](https://github.com/raboof/reproducible-builds-jvm-stripper/actions/workflows/maven.yml/badge.svg)](https://github.com/raboof/reproducible-builds-jvm-stripper/actions/workflows/maven.yml)
+[![Maven Central](https://maven-badges.herokuapp.com/maven-central/net.bzzt/reproducible-builds-jvm-stripper/badge.svg)](https://maven-badges.herokuapp.com/maven-central/net.bzzt/reproducible-builds-jvm-stripper)
 
 Library to make your JVM artifacts byte-for-byte reproducible.
 
@@ -22,3 +22,4 @@ To compile the project and run its integration tests:
 ```
 mvn clean install #-Prun-its
 ```
+

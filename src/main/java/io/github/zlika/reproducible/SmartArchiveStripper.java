@@ -15,39 +15,31 @@ package io.github.zlika.reproducible;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
+import java.time.LocalDateTime;
 
 /**
- * Process tar formats: tar, tar.gz, tar.bz2 using the default configuriaton
- * and the right tar stripper implementation.
+ * Process archive formats: tar, tar.gz, tar.bz2, ar, cpio using the default configuration
+ * and the right stripper implementation.
  * @author Umberto Nicoletti (umberto.nicoletti@gmail.com)
  */
-final class SmartTarStripper implements Stripper
+final class SmartArchiveStripper implements Stripper
 {
-    /**
-     * Whether the original file should be overwritten.
-     */
-    private final boolean overwrite;
+    private final LocalDateTime reproducibleDateTime;
 
     /**
-     * Ctor.
-     * @param overwrite Overwrite original file.
+     * Constructor.
+     * @param reproducibleDateTime the date/time to use in the archive entries.
      */
-    public SmartTarStripper(final boolean overwrite)
+    public SmartArchiveStripper(LocalDateTime reproducibleDateTime)
     {
-        this.overwrite = overwrite;
+        this.reproducibleDateTime = reproducibleDateTime;
     }
 
     @Override
     public void strip(final File file, final File stripped) throws IOException
     {
-        final Stripper stripper = SmartTarStripper.findImplementation(file);
+        final Stripper stripper = findImplementation(file);
         stripper.strip(file, stripped);
-        if (this.overwrite)
-        {
-            Files.move(stripped.toPath(), file.toPath(), StandardCopyOption.REPLACE_EXISTING);
-        }
     }
 
     /**
@@ -55,18 +47,16 @@ final class SmartTarStripper implements Stripper
      * @param file File to strip.
      * @return Stripper implementation.
      */
-    private static Stripper findImplementation(final File file)
+    private Stripper findImplementation(File file)
     {
         final String name = file.getName();
-        Stripper impl = new TarStripper();
-        if (name.endsWith(".tar.gz"))
+        if (name.endsWith(".tar.gz") || name.endsWith(".tar.bz2"))
         {
-            impl = new TarGzStripper();
+            return new CompressedArchiveStripper(reproducibleDateTime);
         }
-        if (name.endsWith(".tar.bz2"))
+        else
         {
-            impl = new TarBzStripper();
+            return new ArchiveStripper(reproducibleDateTime);
         }
-        return impl;
     }
 }

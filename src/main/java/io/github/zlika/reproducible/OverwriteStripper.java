@@ -11,21 +11,39 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
-
 package io.github.zlika.reproducible;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 
 /**
- * Strips non-reproducible data from Maven pom properties files.
- * This stripper removes all comment lines (as some of them can contain date/time).
+ * Stripper optionnally overwritting the input file with the stripped file.
  */
-public final class PomPropertiesStripper implements Stripper
+public class OverwriteStripper implements Stripper
 {
+    private final boolean overwrite;
+    private final Stripper stripper;
+
+    /**
+     * Constructor.
+     * @param overwrite true to overwrite the original file.
+     * @param stripper  Stripper to use to process the file.
+     */
+    public OverwriteStripper(boolean overwrite, Stripper stripper)
+    {
+        this.overwrite = overwrite;
+        this.stripper = stripper;
+    }
+
     @Override
     public void strip(File in, File out) throws IOException
     {
-        new TextFileStripper().addPredicate(s -> s.startsWith("#")).strip(in, out);
+        stripper.strip(in, out);
+        if (this.overwrite)
+        {
+            Files.move(out.toPath(), in.toPath(), StandardCopyOption.REPLACE_EXISTING);
+        }
     }
 }

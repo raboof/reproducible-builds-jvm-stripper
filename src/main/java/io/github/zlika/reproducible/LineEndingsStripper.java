@@ -23,27 +23,16 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Predicate;
 
 /**
- * Generic text file stripper.
+ * Replace line endings by platform agnostic line endings.
  */
-class TextFileStripper implements Stripper
+public enum LineEndingsStripper implements Stripper
 {
-    private final List<Predicate<String>> predicates = new ArrayList<>();
+    /** Singleton. */
+    INSTANCE;
     
-    /**
-     * Adds a predicate to filter the text file.
-     * @param predicate the predicate.
-     * @return this.
-     */
-    public TextFileStripper addPredicate(Predicate<String> predicate)
-    {
-        predicates.add(predicate.negate());
-        return this;
-    }
+    private static final String NEW_LINE = "\r\n";
     
     @Override
     public void strip(File in, File out) throws IOException
@@ -53,13 +42,13 @@ class TextFileStripper implements Stripper
             final BufferedReader reader = new BufferedReader(
                 new InputStreamReader(new FileInputStream(in), StandardCharsets.UTF_8)))
         {
-            reader.lines().filter(s -> predicates.stream().allMatch(p -> p.test(s)))
+            reader.lines()
                         .forEach(s ->
                         {
                             try
                             {
                                 writer.write(s);
-                                writer.write("\r\n");
+                                writer.write(NEW_LINE);
                             }
                             catch (IOException e)
                             {

@@ -22,9 +22,9 @@ import org.junit.Assert;
 import org.junit.Test;
 
 /**
- * Unit tests for {@link PomPropertiesStripper}.
+ * Unit tests for {@link PropertiesFileStripper}.
  */
-public class PomPropertiesStripperTest
+public class PropertiesFileStripperTest
 {
     /**
      * Tests stripping on a reference pom.properties file.
@@ -36,10 +36,30 @@ public class PomPropertiesStripperTest
         final File out = File.createTempFile("pom", null);
         out.deleteOnExit();
         
-        new PomPropertiesStripper().strip(new File(this.getClass().getResource("pom.properties").getFile()), out);
+        new PropertiesFileStripper().strip(new File(this.getClass().getResource("pom.properties").getFile()), out);
         
         final byte[] expected = Files.readAllBytes(new File(
                                     this.getClass().getResource("pom-stripped.properties").getFile()).toPath());
+        final byte[] actual = Files.readAllBytes(out.toPath());
+        Assert.assertArrayEquals(expected, actual);
+        out.delete();
+    }
+    
+    /**
+     * Tests stripping on a reference git.properties file, with a list of properties to remove.
+     * @throws IOException 
+     */
+    @Test
+    public void testStripGitPropertiesFile() throws IOException
+    {
+        final File out = File.createTempFile("git", null);
+        out.deleteOnExit();
+        
+        new PropertiesFileStripper("git.build.host", "git.build.time", "git.build.user.email", "git.build.user.name")
+            .strip(new File(this.getClass().getResource("git.properties").getFile()), out);
+        
+        final byte[] expected = Files.readAllBytes(new File(
+                                    this.getClass().getResource("git-stripped.properties").getFile()).toPath());
         final byte[] actual = Files.readAllBytes(out.toPath());
         Assert.assertArrayEquals(expected, actual);
         out.delete();

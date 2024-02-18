@@ -15,10 +15,12 @@
 package io.github.zlika.reproducible;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 import org.apache.maven.plugin.AbstractMojo;
@@ -28,19 +30,17 @@ import org.apache.maven.plugins.annotations.Mojo;
 import org.apache.maven.plugins.annotations.Parameter;
 
 /**
- * Fixes the produced artifacts (ZIP/JAR/WAR/EAR) to make the build reproducible.
+ * Fixes the produced artifacts to make the build reproducible.
  */
 @Mojo(name = "strip-jar", defaultPhase = LifecyclePhase.PRE_INTEGRATION_TEST,
         requiresProject = false, threadSafe = true)
 public final class StripJarMojo extends AbstractMojo
 {
-    private static final String[] ZIP_EXT = { "zip", "jar", "war", "ear", "hpi" };
-
-    private static final String TAR_GZ_EXT = "tar.gz";
-
-    private static final String TAR_BZ_EXT = "tar.bz2";
-
-    private static final String TAR_EXT = "tar";
+    private static final List<String> ZIP_EXT = Arrays.asList("zip", "jar", "war", "ear", "hpi", "adapter");
+    private static final List<String> ARCHIVE_EXT =
+            Arrays.asList(".tar", ".tar.gz", ".tar.bz2", ".tgz", ".cpio", ".rpm", ".ar", ".deb");
+    private static final byte[] ZIP_FILE_HEADER = new byte[] { 0x50, 0x4B, 0x03, 0x04 };
+    private static final byte[] SPRING_BOOT_EXEC_HEADER = new byte[] { 0x23, 0x21, 0x2F, 0x62, 0x69, 0x6E };
 
     /**
      * Directory where to find zip/jar/war/ear files for stripping.
@@ -74,20 +74,62 @@ public final class StripJarMojo extends AbstractMojo
      */
     @Parameter(defaultValue = "yyyyMMddHHmmss", property = "reproducible.zipDateTimeFormatPattern")
     private String zipDateTimeFormatPattern;
-    
+
     /**
      * If enabled, the ZIP external file attributes will be forced to rw-r--r for files and rwxr-xr-x for folders.
      * This parameter only applies to JAR/WAR files.
      */
     @Parameter(defaultValue = "false", property = "reproducible.fixZipExternalFileAttributes")
     private boolean fixZipExternalFileAttributes;
-    
+
     /**
      * Additional manifest attributes to strip.
      * Currently, only single-line attributes are supported.
      */
     @Parameter(property = "reproducible.manifestAttributes")
     private List<String> manifestAttributes;
+
+    @Parameter(property = "reproducible.newLineTextFiles")
+    private List<String> newLineTextFiles;
+
+    /**
+     * A list of filename inclusion patterns. File names are checked against
+     * inclusion patterns and, if at least one inclusion pattern matches, the
+     * file is considered a candidate for stripping. Inclusion patterns are
+     * checked *before* exclusion patterns.
+     *
+     * By default, all files are included.
+     *
+     * @see PatternFileNameFilter
+     */
+
+    @Parameter(property = "reproducible.includes")
+    private List<String> includes;
+
+    /**
+     * A list of filename exclusion patterns. File names are checked against
+     * exclusion patterns and, if at least one exclusion pattern matches, the
+     * file is *not* considered a candidate for stripping. Exclusion patterns are
+     * checked *after* inclusion patterns.
+     *
+     * By default, no files are excluded.
+     *
+     * @see PatternFileNameFilter
+     */
+
+    @Parameter(property = "reproducible.excludes")
+    private List<String> excludes;
+
+    /**
+     * A list of nested filename inclusion patterns. File names are checked against
+     * nested inclusion patterns and, if at least one nested inclusion pattern matches, the
+     * file is considered a candidate for stripping.
+     *
+     * By default, no nested files are included.
+     */
+
+    @Parameter(property = "reproducible.nestedIncludes")
+    private List<String> nestedIncludes;
 
     @Override
     public void execute() throws MojoExecutionException
@@ -98,24 +140,48 @@ public final class StripJarMojo extends AbstractMojo
         }
         else
         {
+            if (this.includes == null || this.includes.isEmpty())
+            {
+                this.includes = Collections.singletonList(".*");
+            }
+            if (this.excludes == null)
+            {
+                this.excludes = Collections.emptyList();
+            }
+
+            final LocalDateTime reproducibleDateTime = LocalDateTime.parse(zipDateTime,
+                    DateTimeFormatter.ofPattern(zipDateTimeFormatPattern));
+            final ZipStripper zipStripper = new ZipStripper(reproducibleDateTime, fixZipExternalFileAttributes);
+            newLineTextFiles.forEach(f -> zipStripper.addFileStripper(f, LineEndingsStripper.INSTANCE));
+            final Stripper stripper = new OverwriteStripper(this.overwrite, new DefaultZipStripper(zipStripper,
+                    this.manifestAttributes));
+
+            if (this.nestedIncludes != null && !this.nestedIncludes.isEmpty())
+            {
+                final Stripper nestedFileStripper =
+                        new DefaultZipStripper(zipStripper, this.manifestAttributes);
+                for (final String include : this.nestedIncludes)
+                {
+                    if (include.endsWith("jar") || include.endsWith("zip"))
+                    {
+                        zipStripper.addFileStripper(include, nestedFileStripper);
+                    }
+                }
+            }
+
             this.process(
                 this.findZipFiles(this.outputDirectory),
-                new DefaultZipStripper(new ZipStripper(LocalDateTime.parse(zipDateTime,
-                DateTimeFormatter.ofPattern(zipDateTimeFormatPattern)),
-                fixZipExternalFileAttributes),
-                        this.overwrite, this.manifestAttributes)
+                stripper
             );
             this.process(
-                this.findTarFiles(this.outputDirectory),
-                new SmartTarStripper(this.overwrite)
+                this.findSpringBootExecutable(this.outputDirectory),
+                new OverwriteStripper(this.overwrite,
+                        new SpringBootExecutableStripper(
+                                new DefaultZipStripper(zipStripper, this.manifestAttributes)))
             );
             this.process(
-                this.findTarBzFiles(this.outputDirectory),
-                new SmartTarStripper(this.overwrite)
-            );
-            this.process(
-                this.findTarGzFiles(this.outputDirectory),
-                new SmartTarStripper(this.overwrite)
+                this.findArchiveFiles(this.outputDirectory),
+                        new OverwriteStripper(this.overwrite, new SmartArchiveStripper(reproducibleDateTime))
             );
         }
     }
@@ -146,33 +212,61 @@ public final class StripJarMojo extends AbstractMojo
         }
     }
 
-    private File[] findZipFiles(File folder)
+    private File[] findZipFiles(final File folder)
     {
+        final PatternFileNameFilter filter =
+                PatternFileNameFilter.of(this.getLog(), this.includes, this.excludes, ZIP_EXT);
+
         final File[] zipFiles = folder.listFiles((dir, name) ->
-                Arrays.stream(ZIP_EXT).anyMatch(ext -> name.toLowerCase().endsWith("." + ext))
-                && new File(dir, name).isFile());
+                filter.accept(dir, name)
+                && new File(dir, name).isFile()
+                && Arrays.equals(getFileHeader(new File(dir, name), ZIP_FILE_HEADER.length),
+                                ZIP_FILE_HEADER));
         return zipFiles != null ? zipFiles : new File[0];
     }
 
-    private File[] findTarBzFiles(File folder)
+    /**
+     * Finds JAR/WAR/ZIP files repackaged by the spring-boot-maven-plugin plugin.
+     */
+    private File[] findSpringBootExecutable(final File folder)
     {
-        final File[] tbzFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(TAR_BZ_EXT));
-        return tbzFiles != null ? tbzFiles : new File[0];
+        final PatternFileNameFilter filter =
+                PatternFileNameFilter.of(this.getLog(), this.includes, this.excludes, ZIP_EXT);
+
+        final File[] zipFiles = folder.listFiles((dir, name) ->
+                filter.accept(dir, name)
+                && new File(dir, name).isFile()
+                && Arrays.equals(getFileHeader(new File(dir, name), SPRING_BOOT_EXEC_HEADER.length),
+                        SPRING_BOOT_EXEC_HEADER));
+        return zipFiles != null ? zipFiles : new File[0];
     }
 
-    private File[] findTarGzFiles(File folder)
+    private byte[] getFileHeader(final File file, final int length)
     {
-        final File[] tgzFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(TAR_GZ_EXT));
-        return tgzFiles != null ? tgzFiles : new File[0];
+        final byte[] header = new byte[length];
+        try (FileInputStream is = new FileInputStream(file))
+        {
+            if (is.read(header) != length)
+            {
+                return null;
+            }
+        }
+        catch (final IOException e)
+        {
+            return null;
+        }
+        return header;
     }
 
-    private File[] findTarFiles(File folder)
+    private File[] findArchiveFiles(final File folder)
     {
-        final File[] tarFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(TAR_EXT));
-        return tarFiles != null ? tarFiles : new File[0];
+        final PatternFileNameFilter filter =
+                PatternFileNameFilter.of(this.getLog(), this.includes, this.excludes, ARCHIVE_EXT);
+        final File[] archiveFiles = folder.listFiles(filter);
+        return archiveFiles != null ? archiveFiles : new File[0];
     }
 
-    private File createStrippedFilename(File originalFile)
+    private File createStrippedFilename(final File originalFile)
     {
         final String filenameWithoutExt = FileUtils.getNameWithoutExtension(originalFile);
         final String ext = FileUtils.getFileExtension(originalFile);
