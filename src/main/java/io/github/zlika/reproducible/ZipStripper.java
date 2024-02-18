@@ -101,6 +101,7 @@ public final class ZipStripper implements Stripper
      * Creates ZipStripper with specified configuration.
      *.
      * @param zipDateTime date and time for zip archive entries.
+     * @param fixZipExternalFileAttributes true to be insensitive to umask setting.
      */
     public ZipStripper(LocalDateTime zipDateTime, boolean fixZipExternalFileAttributes)
     {
@@ -141,11 +142,12 @@ public final class ZipStripper implements Stripper
                 final Stripper stripper = getSubFilter(name);
                 if (stripper != null)
                 {
+                    final String suffix = name.substring(name.lastIndexOf('.'));
                     // Unzip entry to temp file
-                    final File tmp = File.createTempFile("tmp", null);
+                    final File tmp = File.createTempFile("tmp", suffix);
                     tmp.deleteOnExit();
                     Files.copy(zip.getInputStream(entry), tmp.toPath(), StandardCopyOption.REPLACE_EXISTING);
-                    final File tmp2 = File.createTempFile("tmp", null);
+                    final File tmp2 = File.createTempFile("tmp", suffix);
                     tmp2.deleteOnExit();
                     stripper.strip(tmp, tmp2);
                     final byte[] fileContent = Files.readAllBytes(tmp2.toPath());
